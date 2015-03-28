@@ -14,22 +14,28 @@ namespace Cliente
     {
         private readonly String SERVER = "localhost";
         private readonly int SERVERPORT = 23456;
-        private int sec = 1, numRec;
-        private String strRec;
-        private int[] nArray = { 5, 4, 3, 2, 1 };
-        private byte[] sent, received = new byte[128];
+        private readonly int RECV_TIMEOUT = 1000;
+        private int sec = 1, receivedSec;
+        private String receivedString;
+        private readonly int[] nArray = { 5, 4, 3, 2, 1 };
+        private byte[] sentBytes, receivedBytes = new byte[128];
         BinaryMessageCodec encoding = new BinaryMessageCodec();
-        UdpClient client = null;
-        Message msg;
+        UdpClient udpClient = null;
+        Message sentMessage;
+        Random random = new Random();
+        int randomNumber;
+        IPEndPoint remoteIPEndPoint;
 
         public void Run()
         {
             try
             {
-                client = new UdpClient();
+                udpClient = new UdpClient();
+
+                remoteIPEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                udpClient.Client.Bind(remoteIPEndPoint);
 
                 ProcessMessages(nArray);
-
             }
             catch (Exception e)
             {
@@ -37,7 +43,7 @@ namespace Cliente
             }
             finally
             {
-                client.Close();
+                udpClient.Close();
             }
             Console.ReadKey();
         }
@@ -49,90 +55,85 @@ namespace Cliente
                 if (i == nArray.Length - 1)
                 {
                     sec = -1;
-                    msg = new Message(sec, nArray[i]);
+                    sentMessage = new Message(sec, nArray[i]);
                 }
                 else
                 {
-                    msg = new Message(sec, nArray[i]);
+                    sentMessage = new Message(sec, nArray[i]);
                 }
 
-                sent = encoding.Encode(msg);
+                sentBytes = Encode(sentMessage);
 
                 sendMessage();
             }
+        }
+
+        private byte[] Encode(Message msg)
+        {
+            return encoding.Encode(sentMessage);
         }
 
         private void sendMessage()
         {
-            
-            Random rndm = new Random();
-
-            int random = rndm.Next(11);
-
-            if (random > 1)
+            randomNumber = random.Next(11);
+            if (randomNumber > 1)
             {
-                client.Send(sent, sent.Length, SERVER, SERVERPORT);
-                Console.WriteLine("Mensaje enviado: " + msg.packet);
+                udpClient.Send(sentBytes, sentBytes.Length, SERVER, SERVERPORT);
+                Console.WriteLine("Mensaje enviado: " + sentMessage.packet);
             }
-            
-            //client.Send(sent, sent.Length, SERVER, SERVERPORT);
-            //Console.WriteLine("Mensaje enviado: " + msg.packet);
+
+            Console.WriteLine("random: " + randomNumber);
 
             try
             {
-                client.Client.ReceiveTimeout = 1000;
-
-                waitACK();
+                SetTimer();
+                
+                WaitACK();
             }
-            catch (Exception e)
+            catch (SocketException e)
             {
-                processException(e);
+                ProcessException(e);
             }
         }
 
-        private void waitACK()
+        private void SetTimer()
         {
-            IPEndPoint remoteIPEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            udpClient.Client.ReceiveTimeout = RECV_TIMEOUT;
+        }
 
-            // Recibir información
-            received = client.Receive(ref remoteIPEndPoint);
+        private void WaitACK()
+        {
+            receivedBytes = udpClient.Receive(ref remoteIPEndPoint);
+            
+            receivedString = encoding.Decode(receivedBytes);
+            receivedSec = int.Parse(receivedString);
 
-            strRec = encoding.Decode(received);
-            numRec = int.Parse(strRec);
-
-            if (sec != numRec)
+            if (sec != receivedSec)
             {
                 sendMessage();
             }
-            else if (sec == numRec)
+            else
             {
-                Console.WriteLine("Numero de secuencia recibido: " + numRec + "\n");
+                Console.WriteLine("Numero de secuencia recibido: " + receivedSec + "\n");
+
+                if (sec == -1)
+                {
+                    Console.WriteLine("Fin del envio de datos");
+                }
                 sec++;
             }
         }
 
-
-        private void processException(Exception e)
+        private void ProcessException(SocketException e)
         {
-            if (e.InnerException != null)
+            if (e.SocketErrorCode == SocketError.TimedOut)
             {
-                if (e.InnerException is SocketException)
-                {
-                    SocketException se = (SocketException)e.InnerException;
-                    if (se.SocketErrorCode == SocketError.TimedOut)
-                    {
-                        Console.WriteLine("Ha expirado el temporizador, se reenvia el mensaje");
-                    }
-                    else
-                    {
-                        Console.WriteLine("Error: " + se.Message);
-                    }
-                }
+                Console.WriteLine("Ha expirado el temporizador, se reenvia el mensaje");
+                sendMessage();
             }
             else
             {
                 Console.WriteLine("Error: " + e.Message);
-                sendMessage();
             }
         }
     }

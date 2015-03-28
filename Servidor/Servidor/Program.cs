@@ -12,13 +12,14 @@ namespace Servidor
 {
     class Server
     {
-        private static int PORT = 23456;
-        private byte[] bRec = new byte[128], bACK;
-        private String strRec;
-        private String[] separador = { " | " }, mRec;
-        private int nRec, secRec, sec = 1;
-
+        private readonly int PORT = 23456;
+        private readonly String[] SEPARATOR = { " | " };
+        private byte[] receivedBytes = new byte[128], bytesACK;
+        private String receivedString;
+        private String[] receivedElements;
+        private int receivedNumber, receivedSec, sec = 1;
         private UdpClient client = null;
+
         BinaryMessageCodec encoding = new BinaryMessageCodec();
         IPEndPoint remoteIPEndPoint = new IPEndPoint(IPAddress.Any, 0);
         
@@ -41,7 +42,7 @@ namespace Servidor
             {
                 try
                 {
-                    waitMessage();
+                    WaitMessage();
                 }
                 catch (Exception e)
                 {
@@ -51,38 +52,41 @@ namespace Servidor
             }
         }
 
-        private void waitMessage()
+        private void WaitMessage()
         {
             // Recibir información
-            bRec = client.Receive(ref remoteIPEndPoint);
+            receivedBytes = client.Receive(ref remoteIPEndPoint);
 
-            strRec = encoding.Decode(bRec);
+            receivedString = encoding.Decode(receivedBytes);
 
-            mRec = strRec.Split(separador, StringSplitOptions.RemoveEmptyEntries);
+            receivedElements = receivedString.Split(SEPARATOR, StringSplitOptions.RemoveEmptyEntries);
             
-            secRec = int.Parse(mRec[0]);
-            nRec = int.Parse(mRec[1]);
+            receivedSec = int.Parse(receivedElements[0]);
+            receivedNumber = int.Parse(receivedElements[1]);
 
-            if (sec != secRec)
+            if (sec != receivedSec)
             {
-                if (secRec == -1)
+                if (receivedSec == -1)
                 {
-                    Console.WriteLine("Mensaje recibido: " + strRec);
+                    Console.WriteLine("Mensaje recibido: " + receivedString);
 
                     sec = -1;
 
                     sendACK();
+
+                    Console.WriteLine("\nFin del envio de datos\n");
+
+                    sec = 1;
                 }
-                else if (secRec != -1)
+                else
                 {
                     Console.WriteLine("El numero de secuencia recibido no conicide. Se descarta el paquete");
-                    waitMessage();
+                    WaitMessage();
                 }
-                
             }
-            else if (sec == secRec)
+            else if (sec == receivedSec)
             {
-                Console.WriteLine("Mensaje recibido: " + strRec);
+                Console.WriteLine("Mensaje recibido: " + receivedString);
 
                 sendACK();
             }
@@ -92,13 +96,12 @@ namespace Servidor
         {
             Message ack = new Message(sec);
 
-            bACK = encoding.Encode(ack);
+            bytesACK = encoding.Encode(ack);
 
-            client.Send(bACK, bACK.Length, remoteIPEndPoint);
+            client.Send(bytesACK, bytesACK.Length, remoteIPEndPoint);
 
             Console.WriteLine("Numero de secuencia enviado: " + sec);
 
-            Console.WriteLine("\nFin del envio de datos");
             sec++;
         }
     }
