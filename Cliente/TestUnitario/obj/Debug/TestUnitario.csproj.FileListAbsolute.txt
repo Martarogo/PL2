@@ -1,7 +1,0 @@
-C:\Users\MARTA\Documents\GitHub\PL2\Cliente\TestUnitario\bin\Debug\TestUnitario.dll
-C:\Users\MARTA\Documents\GitHub\PL2\Cliente\TestUnitario\bin\Debug\TestUnitario.pdb
-C:\Users\MARTA\Documents\GitHub\PL2\Cliente\TestUnitario\bin\Debug\Vocabulary.dll
-C:\Users\MARTA\Documents\GitHub\PL2\Cliente\TestUnitario\bin\Debug\Vocabulary.pdb
-C:\Users\MARTA\Documents\GitHub\PL2\Cliente\TestUnitario\obj\Debug\TestUnitario.csprojResolveAssemblyReference.cache
-C:\Users\MARTA\Documents\GitHub\PL2\Cliente\TestUnitario\obj\Debug\TestUnitario.dll
-C:\Users\MARTA\Documents\GitHub\PL2\Cliente\TestUnitario\obj\Debug\TestUnitario.pdb

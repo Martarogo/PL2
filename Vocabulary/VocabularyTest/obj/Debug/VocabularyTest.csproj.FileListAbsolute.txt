@@ -1,0 +1,7 @@
+C:\Users\MARTA\Documents\GitHub\PL2\Vocabulary\VocabularyTest\obj\Debug\VocabularyTest.csprojResolveAssemblyReference.cache
+C:\Users\MARTA\Documents\GitHub\PL2\Vocabulary\VocabularyTest\bin\Debug\VocabularyTest.dll
+C:\Users\MARTA\Documents\GitHub\PL2\Vocabulary\VocabularyTest\bin\Debug\VocabularyTest.pdb
+C:\Users\MARTA\Documents\GitHub\PL2\Vocabulary\VocabularyTest\bin\Debug\Vocabulary.dll
+C:\Users\MARTA\Documents\GitHub\PL2\Vocabulary\VocabularyTest\bin\Debug\Vocabulary.pdb
+C:\Users\MARTA\Documents\GitHub\PL2\Vocabulary\VocabularyTest\obj\Debug\VocabularyTest.dll
+C:\Users\MARTA\Documents\GitHub\PL2\Vocabulary\VocabularyTest\obj\Debug\VocabularyTest.pdb
