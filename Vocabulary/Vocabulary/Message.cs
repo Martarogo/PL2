@@ -40,6 +40,5 @@ namespace Vocabulary
             _sec = sec;
             _packet = _sec.ToString();
         }
-
     }
 }
